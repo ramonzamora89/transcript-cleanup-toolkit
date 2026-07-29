@@ -1,0 +1,9 @@
+{
+  "name": "transcript-cleanup-scripts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dependencias de build_transcript.js (genera el .docx final).",
+  "dependencies": {
+    "docx": "^9.7.1"
+  }
+}

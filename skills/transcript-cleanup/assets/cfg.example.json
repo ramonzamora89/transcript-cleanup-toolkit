@@ -1,0 +1,11 @@
+{
+  "id": "id_del_archivo",
+  "archivo": "Nombre del audio original.mp3",
+  "idioma": "Español",
+  "duracion": "00:00:00",
+  "hablantes": "N hablante(s) (diarización automática)",
+  "notas": "Contexto real de la grabación: tema, quiénes hablan, si es fragmento de algo más largo, problemas de audio encontrados y cómo se resolvieron. Sin \\n — el generador no convierte saltos de línea.",
+  "pendientes": [
+    "Lo que de verdad quedó abierto en ESTA grabación: términos [dudoso] con su timestamp exacto, nombres sin confirmar, huecos de silencio sin explicar, etc. No copiar una lista genérica de otro proyecto."
+  ]
+}
