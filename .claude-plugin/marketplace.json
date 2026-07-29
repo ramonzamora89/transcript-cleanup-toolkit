@@ -1,0 +1,15 @@
+{
+  "name": "transcript-cleanup-toolkit",
+  "description": "Transcribe audio (Deepgram Nova-3) and produce reviewed, timestamped .docx transcripts with a fidelity-first cleanup workflow.",
+  "owner": {
+    "name": "Ramon Zamora",
+    "url": "https://github.com/ramonzamora89"
+  },
+  "plugins": [
+    {
+      "name": "transcript-cleanup-toolkit",
+      "source": "./",
+      "description": "Transcribe audio (Deepgram Nova-3) and produce reviewed, timestamped .docx transcripts with a fidelity-first cleanup workflow."
+    }
+  ]
+}

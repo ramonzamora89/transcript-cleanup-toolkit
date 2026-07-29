@@ -38,7 +38,7 @@ grabación lo sigue poniendo quien la revisa.
 
 ```
 /plugin marketplace add ramonzamora89/transcript-cleanup-toolkit
-/plugin install transcript-cleanup-toolkit
+/plugin install transcript-cleanup-toolkit@transcript-cleanup-toolkit
 ```
 
 O clonar el repo y apuntar Claude Code a la carpeta localmente.
