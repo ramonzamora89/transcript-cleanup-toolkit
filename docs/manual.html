@@ -70,10 +70,16 @@
     page-break-inside: avoid;
   }
   pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  figure { margin: 8pt 0 14pt; page-break-inside: avoid; text-align: center; }
+  figure img { width: 78%; border: 1px solid #cbd5e1; border-radius: 6pt; }
+  figcaption { font-size: 8.6pt; color: #64748b; margin-top: 5pt; }
 
   .cover {
     page: cover;
-    height: 100vh;
+    position: relative;
+    height: 297mm;  /* A4 exacto: 100vh no mide lo mismo en weasyprint y en Chrome */
+    overflow: hidden;
+    break-after: page;
     background: linear-gradient(160deg, #0b1220 0%, #17385c 55%, #2E5B8A 100%);
     color: #ffffff;
     display: flex;
@@ -201,8 +207,8 @@ transcripción <code>.docx</code> de revisión: transcripción con Deepgram Nova
 calidad de audio, reconstrucción de turnos por hablante (por <em>utterance</em> o por palabra,
 según cuál capture mejor la conversación) y un documento final con marcas de tiempo reales.</p>
 
-<p>El plugin trae <strong>un skill</strong>, <code>transcript-cleanup</code>, con cinco scripts y
-dos referencias. Se activa solo dentro de una sesión de Claude Code cuando pedís transcribir o
+<p>El plugin trae <strong>un skill</strong>, <code>transcript-cleanup</code>, con nueve scripts, una
+página de revisión y dos referencias. Se activa solo dentro de una sesión de Claude Code cuando pedís transcribir o
 limpiar una grabación; no hay que invocarlo con un comando especial.</p>
 
 <h3>Lo que aporta el plugin</h3>
@@ -213,6 +219,9 @@ limpiar una grabación; no hay que invocarlo con un comando especial.</p>
     una grabación devuelve poco o nada.</li>
   <li>Los <strong>principios de limpieza</strong>: no inventar, <code>[dudoso]</code> /
     <code>[inaudible]</code> con marca de tiempo exacta, fidelidad sobre pulido.</li>
+  <li>La <strong>revisión de dudosos escuchando</strong>: un clip de audio (o video) por cada tramo
+    dudoso, con opciones para elegir o escribir la tuya, en una página local (app Desktop) o en el
+    chat (terminal). Ver §6, Paso 2.5.</li>
 </ul>
 
 <h3>Lo que no trae, a propósito</h3>
@@ -369,6 +378,7 @@ manuales del flujo: <code>npm install</code>, los <code>ffmpeg</code> de diagnó
   <tr><td>Plugins</td><td>Comando <code>/plugin</code></td><td>Botón <strong>+</strong> &rarr; Plugins (interfaz gráfica)</td></tr>
   <tr><td>Ajustes y permisos</td><td colspan="2">Los mismos archivos: <code>~/.claude/settings.json</code> y el <code>.claude/settings.json</code> del proyecto</td></tr>
   <tr><td>Variables de entorno</td><td>Las del shell</td><td>Editor de entorno local o <code>env</code> en settings</td></tr>
+  <tr><td>Revisión de dudosos (Paso 2.5)</td><td>Clips en <code>clips_dudosos/</code> + preguntas en el chat de 4 en 4</td><td>Página local con reproductor, abierta en el panel del navegador de la app</td></tr>
   <tr><td>Varias grabaciones a la vez</td><td>Varias terminales</td><td>Sesiones en paralelo en la barra lateral</td></tr>
   <tr><td>Sesiones en la nube</td><td>—</td><td>Disponibles, pero el navegador de plugins no funciona ahí: hay que declarar el plugin en <code>enabledPlugins</code> del <code>.claude/settings.json</code> del repositorio</td></tr>
 </table>
@@ -559,6 +569,11 @@ dejar constancia de un tramo dudoso sin ensuciar la transcripción.</p>
 
 <h3>Paso 2.5 · Revisión de dudosos escuchando los clips</h3>
 
+<p><strong>Cómo pedirlo.</strong> Al terminar la limpieza fina, Claude ofrece revisar los dudosos.
+También se puede pedir en cualquier momento: <em>«revisemos los dudosos de E07 escuchando los
+clips»</em>. Si no querés revisar ahora, las marcas quedan como pendientes en el documento, igual
+que antes.</p>
+
 <p>La limpieza fina deja marcas <code>[dudoso: …]</code> e <code>[inaudible]</code>. En vez de buscar
 cada una a mano en el audio, el plugin corta un clip de cada tramo, propone opciones y deja que
 quien revisa escuche y elija —o escriba lo que oye—. Lo que se elige es confirmación humana: entra
@@ -584,9 +599,22 @@ python3 scripts/apply_resoluciones.py &lt;dir&gt;                 # aplica lo el
 reproductor por tramo (con «escuchar el tramo», clip completo y velocidad 0,75×), el contexto con la
 marca resaltada, las opciones y un campo «Otra opción». Cada elección se guarda al momento; el botón
 «Terminé» cierra el servidor. El audio no sale de la máquina.</p>
+<figure>
+  <img src="img/revision-dudosos.png" alt="Página de revisión de dudosos: un reproductor por tramo, el contexto con la marca resaltada y las opciones para elegir">
+  <figcaption>La página de revisión en la app Desktop. El primer tramo ya está resuelto; el segundo, pendiente.</figcaption>
+</figure>
+
 <p><strong>En la terminal</strong>, Claude te dice dónde quedó <code>clips_dudosos/</code> (con un
 <code>index.md</code>) para que abras los clips con tu reproductor, y te pregunta en el chat de
 <strong>4 en 4</strong> tramos con el selector de opciones; «Otro» es para escribir tu versión.</p>
+<pre><code>d03 · [00:34:52] d03_003452.mp3
+"Las compañeras de ___ siguen yendo cada quince días a la reunión." ¿Qué se dice?
+
+  ❯ 1. Xochitlán
+    2. Xochiltepec
+    3. [inaudible]
+    4. Otro (escribir)</code></pre>
+
 <p>Las dos vías escriben el mismo <code>resoluciones.json</code>. <code>apply_resoluciones.py</code>
 reemplaza las marcas (respaldo en <code>turns_ts.before_review.json</code>) y anota en
 <code>pendientes</code> lo confirmado y lo que quedó sin resolver, con su timestamp.</p>

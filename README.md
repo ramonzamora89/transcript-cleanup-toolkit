@@ -43,12 +43,13 @@ grabación lo sigue poniendo quien la revisa.
 ## Manual
 
 **[`manual-instalacion.pdf`](manual-instalacion.pdf)** — manual completo de instalación y uso
-(18 pp.): instalación en la CLI y en la pestaña **Code** de la app Claude Desktop, cómo montar
-el proyecto que va a usar el plugin, el flujo paso a paso, el árbol de decisión de calidad de
+(19 pp.): instalación en la CLI y en la pestaña **Code** de la app Claude Desktop, cómo montar
+el proyecto que va a usar el plugin, el flujo paso a paso (incluida la revisión de dudosos
+escuchando los clips), el árbol de decisión de calidad de
 audio, cómo se ha usado en proyectos reales y solución de problemas.
 
 La fuente es `docs/manual.html`; se regenera con `python3 docs/build_manual.py` (requiere
-`weasyprint`).
+`weasyprint`), o con `python3 docs/build_manual.py --chrome` (usa Chrome/Edge; sirve en Windows).
 
 ## Instalación (Claude Code)
 

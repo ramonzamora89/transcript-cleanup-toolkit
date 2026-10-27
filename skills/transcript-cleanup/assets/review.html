@@ -118,7 +118,7 @@ function render(e) {
       <button data-act="inicio">⟲ Clip completo</button>
       <button data-act="lento">Velocidad 0.75×</button>
     </div>
-    <p class="ctx">…${esc((e.contexto?.antes || "").slice(-140))} <mark>${esc(e.marcador)}</mark> ${esc((e.contexto?.despues || "").slice(0, 140))}…</p>
+    <p class="ctx">${(e.contexto?.antes || "").length > 140 ? "…" : ""}${esc((e.contexto?.antes || "").slice(-140))} <mark>${esc(e.marcador)}</mark> ${esc((e.contexto?.despues || "").slice(0, 140))}${(e.contexto?.despues || "").length > 140 ? "…" : ""}</p>
     ${e.asr ? `<p class="asr">ASR: ${esc(e.asr)}</p>` : ""}
     <div class="opts">
       ${opts}
