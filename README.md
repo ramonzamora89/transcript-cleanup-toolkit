@@ -21,6 +21,12 @@ invertir tiempo en limpieza fina de texto.
   - `scripts/build_turns.py` / `build_turns_words.py` — arman los turnos desde el JSON crudo,
     por *utterance* o por palabra (esta última resuelve diarización floja en audio de un solo
     micrófono o con un hablante dominante).
+  - `scripts/find_dudosos.py` / `make_clips.py` — ubican en el tiempo cada `[dudoso]`/`[inaudible]`
+    y cortan un clip de cada uno (mp3, o mp4 con imagen si la fuente es video).
+  - `scripts/review_server.py` + `assets/review.html` — página local para escuchar cada clip y
+    elegir la opción correcta o escribir otra (en la app Desktop se abre en el panel del navegador).
+    En la terminal, la misma revisión se hace en el chat, de 4 en 4 tramos.
+  - `scripts/apply_resoluciones.py` — aplica las elecciones a `turns_ts.json` y a los pendientes.
   - `scripts/build_transcript.js` — genera el `.docx` final desde `cfg.json` + `turns_ts.json`.
   - `references/criterios-limpieza-ejemplo.md` — plantilla para el glosario/criterios propios
     de cada proyecto (esto vive en el proyecto que usa el skill, no en el skill).
@@ -34,6 +40,17 @@ tokenización de nombres. Eso es config de cada proyecto — ver
 mecánico y el árbol de decisión de calidad de audio; el criterio de limpieza fina de cada
 grabación lo sigue poniendo quien la revisa.
 
+## Manual
+
+**[`manual-instalacion.pdf`](manual-instalacion.pdf)** — manual completo de instalación y uso
+(19 pp.): instalación en la CLI y en la pestaña **Code** de la app Claude Desktop, cómo montar
+el proyecto que va a usar el plugin, el flujo paso a paso (incluida la revisión de dudosos
+escuchando los clips), el árbol de decisión de calidad de
+audio, cómo se ha usado en proyectos reales y solución de problemas.
+
+La fuente es `docs/manual.html`; se regenera con `python3 docs/build_manual.py` (requiere
+`weasyprint`), o con `python3 docs/build_manual.py --chrome` (usa Chrome/Edge; sirve en Windows).
+
 ## Instalación (Claude Code)
 
 ```
@@ -41,12 +58,19 @@ grabación lo sigue poniendo quien la revisa.
 /plugin install transcript-cleanup-toolkit@transcript-cleanup-toolkit
 ```
 
-O clonar el repo y apuntar Claude Code a la carpeta localmente.
+En la **app Claude Desktop**, los mismos pasos van dentro de una sesión de la pestaña **Code**:
+registrar el marketplace con `/plugin marketplace add ...` e instalar desde el botón **+** →
+*Plugins* → *Add plugin*. El menú lateral *Customize → Plugins* es de las pestañas Chat y
+Cowork: **no** alimenta las sesiones de Code. Y la clave de Deepgram hay que cargarla en el
+editor de entorno local de la app —Desktop no lee los `export` del `.zshrc`—. Ver §4 del manual.
+
+O clonar el repo y apuntar Claude Code a la carpeta localmente
+(`claude --plugin-dir /ruta/local/transcript-cleanup-toolkit`).
 
 ## Requisitos
 
 - `DEEPGRAM_API_KEY` en el entorno.
-- `ffmpeg` (normalización de volumen, diagnóstico de eco).
+- `ffmpeg`/`ffprobe` (normalización de volumen, diagnóstico de eco, audio de videos y clips de dudosos).
 - Python 3 y Node.js (con `npm install` dentro de `skills/transcript-cleanup/` para la
   dependencia `docx` que usa `build_transcript.js`).
 
@@ -61,6 +85,10 @@ scripts/transcribe.sh /ruta/a/tus/audios
 python scripts/diagnose_audio.py /ruta/a/transcripciones/<id>/<id>_deepgram.json
 python scripts/build_turns_words.py /ruta/a/.../<id>_deepgram.json merged_words.json
 # ... limpieza fina con criterio humano/Claude sobre merged_words.json -> turns_ts.json ...
+python scripts/find_dudosos.py /ruta/.../<id> /ruta/.../<id>_deepgram.json
+python scripts/make_clips.py /ruta/.../<id> /ruta/al/audio_o_video
+python scripts/review_server.py /ruta/.../<id>      # o la revisión en el chat, desde la CLI
+python scripts/apply_resoluciones.py /ruta/.../<id>
 node scripts/build_transcript.js /ruta/a/transcripciones/<id>
 ```
 

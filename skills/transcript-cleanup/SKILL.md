@@ -1,6 +1,6 @@
 ---
 name: transcript-cleanup
-description: Transcribe audio con Deepgram Nova-3 y produce un .docx limpio, fiel a lo dicho, con marcas de tiempo reales — para entrevistas, talleres, paneles o cualquier grabación que necesite pasar de audio crudo a transcripción de revisión. Úsalo cuando el usuario pida transcribir un audio, limpiar una transcripción existente, procesar un JSON de Deepgram, o cuando Deepgram/nova-3 no esté detectando habla en una grabación (volumen bajo, eco, mala calidad).
+description: Transcribe audio o video con Deepgram Nova-3 y produce un .docx limpio, fiel a lo dicho, con marcas de tiempo reales — para entrevistas, talleres, paneles o cualquier grabación que necesite pasar de audio crudo a transcripción de revisión. Úsalo cuando el usuario pida transcribir un audio, limpiar una transcripción existente, procesar un JSON de Deepgram, revisar o resolver los tramos [dudoso]/[inaudible] escuchando clips, o cuando Deepgram/nova-3 no esté detectando habla en una grabación (volumen bajo, eco, mala calidad).
 ---
 
 # Transcript cleanup — pipeline genérico
@@ -43,6 +43,9 @@ audio.mp3/.m4a ──(transcribe.sh)──> <id>_deepgram.json
    ──(diagnose_audio.sh, si hace falta)──> audio normalizado ──> re-transcribir
    ──(build_turns.py y/o build_turns_words.py)──> merged.json / merged_words_<id>.json
    ──(limpieza fina, criterio de lenguaje)──> turns_ts.json + cfg.json
+   ──(find_dudosos.py + make_clips.py)──> dudosos.json + clips_dudosos/
+   ──(revisión escuchando: review_server.py | selector en la CLI)──> resoluciones.json
+   ──(apply_resoluciones.py)──> turns_ts.json + cfg.pendientes actualizados
    ──(build_transcript.js)──> <id>_transcripcion.docx
 ```
 
@@ -53,6 +56,10 @@ export DEEPGRAM_API_KEY=...   # o dejarlo en un .env que el usuario indique
 scripts/transcribe.sh /ruta/a/audios              # todos los audios de la carpeta
 scripts/transcribe.sh /ruta/a/audios archivo.mp3  # uno solo
 ```
+
+Acepta también video (`.mp4/.mov/.mkv/.webm`): extrae solo el audio con ffmpeg antes de enviarlo.
+Anotar la ruta del archivo original (audio o video) en `media` de `cfg.json` — la usa el Paso 2.5
+para cortar los clips.
 
 Usa `model=nova-3&detect_language=true&diarize=true&utterances=true&utt_split=0.8&smart_format=true&punctuate=true`
 por defecto. Si el proyecto tiene keyterms de dominio (nombres propios poco comunes, máximo
@@ -135,10 +142,72 @@ Sobre cada turno crudo: aplicar los principios de arriba, el glosario del proyec
 `{i, label, ts, text}`, o `{label, ts: null, text, note: true}` para notas de revisión que se
 muestran en rojo/itálica en el documento.
 
+### Paso 2.5 — Revisión de dudosos escuchando los clips
+
+Cuando la limpieza fina deja marcas `[dudoso...]` / `[inaudible]`, ofrecer al usuario revisarlas
+escuchando: un clip por tramo, opciones razonadas, y elige (o escribe otra). Si no quiere revisar
+ahora, saltar al Paso 3 — las marcas quedan como pendientes, como siempre.
+
+1. **Ubicar los tramos:**
+   ```bash
+   python scripts/find_dudosos.py <dir> <id>_deepgram.json
+   ```
+   Escribe `<dir>/dudosos.json` con `start`/`end` estimados (ventana del turno + palabras de
+   confianza baja más cercanas a la marca) y el texto ASR crudo de cada tramo con su confianza.
+   Revisar que `asr` corresponda a lo marcado; si no, corregir `start`/`end` a mano con las
+   `words` del JSON de Deepgram.
+2. **Redactar las opciones** de cada entrada (`opciones`: lista de 1-3 textos), editando
+   `dudosos.json`. Cada opción tiene que tener apoyo concreto: el ASR crudo, una variante
+   fonética de él, un término del glosario del proyecto, o algo que se dice en otra parte de
+   la misma grabación. Ordenar de más a menos probable. **No inventar opciones plausibles sin
+   apoyo** (principio 1) — si solo hay una hipótesis razonable, dar solo esa. `[inaudible]` y
+   "dejar como está" se ofrecen siempre aparte; no meterlos en `opciones`.
+3. **Cortar los clips:**
+   ```bash
+   python scripts/make_clips.py <dir>            # usa `media` de cfg.json
+   python scripts/make_clips.py <dir> video.mp4  # o la ruta explícita
+   ```
+   `clips_dudosos/<id>_<HHMMSS>.mp3`, o `.mp4` con imagen si la fuente es video (`--audio-only`
+   para forzar audio). Cada clip trae 1.5 s antes y 1 s después del tramo. Volver a correr
+   este paso si cambian las opciones (regenera `clips_dudosos/index.md`).
+4. **Revisar — según dónde corre la sesión:**
+   - **App Desktop (pestaña Code)** — si están disponibles las herramientas del navegador
+     integrado (`mcp__Claude_Browser__*`): levantar el servidor **en segundo plano**
+     ```bash
+     python scripts/review_server.py <dir>        # http://127.0.0.1:8765/ ; --port si está ocupado
+     ```
+     y abrir esa URL en el panel del navegador de la app. La página muestra un reproductor por
+     tramo, las opciones, `[inaudible]`, "dejar como está" y un campo "Otra opción". Cada
+     elección se guarda al momento en `resoluciones.json`. Esperar a que el usuario diga que
+     terminó (botón «Terminé», que además apaga el servidor). Solo escucha en 127.0.0.1: el
+     audio no sale de la máquina. No publicar los clips en ningún servicio externo.
+   - **Terminal (CLI)** — decir la ruta de `clips_dudosos/` (con `index.md`) y cómo abrirla
+     (`start` en Windows, `open` en macOS, `xdg-open` en Linux). Luego preguntar con el selector
+     de preguntas (AskUserQuestion) **en lotes de 4 tramos** (el máximo por llamada), en orden:
+     - `header`: el id (`d01`); `question`: timestamp, nombre del clip y el contexto corto con
+       la marca, p. ej. *«[00:12:41] d03_001241.mp3 — "…de la cooperativa ___ y de cómo
+       empezó…" ¿Qué se dice?»*
+     - `options`: las de `opciones` (máx. 3) + `[inaudible]` (2-4 en total). Si no hay
+       `opciones`, ofrecer `[inaudible]` y "Dejar como está". "Otro" lo agrega el selector solo:
+       es el texto libre del usuario.
+     - Tras cada lote, escribir las respuestas en `resoluciones.json` (formato abajo, `via:
+       "cli"`) antes de seguir con el siguiente.
+   Formato de `resoluciones.json` (igual en ambos modos):
+   `{"d01": {"eleccion": "opcion"|"otro"|"inaudible"|"mantener", "texto": "...", "via": "pagina"|"cli", "fecha": "ISO"}}`.
+   Un tramo sin entrada cuenta como "mantener".
+5. **Aplicar:**
+   ```bash
+   python scripts/apply_resoluciones.py <dir>
+   ```
+   Reemplaza cada marca por lo elegido (respaldo en `turns_ts.before_review.json`) y deja rastro
+   en `cfg.json → pendientes`: lo confirmado con su timestamp, y lo no resuelto como pendiente.
+   Lo que elige el usuario es confirmación humana (principio 6): va al texto sin `[dudoso]`.
+   Se puede volver a correr sin duplicar nada.
+
 ### Paso 3 — cfg.json y el documento
 
 Config por grabación (ver `assets/cfg.example.json`):
-`{id, archivo, idioma, duracion, hablantes, notas, pendientes}`. El **id controla** el nombre
+`{id, archivo, media, idioma, duracion, hablantes, notas, pendientes}`. El **id controla** el nombre
 de archivo de salida desde una sola fuente. Sin `\n` en `notas` — el generador no convierte
 saltos de línea. `pendientes` se genera de lo que de verdad quedó abierto en *esa* grabación —
 no heredar una lista fija de otro proyecto. Cada estandarización o `[dudoso]` debe dejar rastro
@@ -174,3 +243,5 @@ explícitamente en vez de fusionar sus configuraciones.
 - No presentar una salida de Whisper (fallback de audio difícil) como transcripción lista para
   limpieza ligera — es un borrador crudo que necesita revisión pesada.
 - No escalar a un lote completo de grabaciones sin validar el criterio en al menos una primero.
+- No subir clips de las grabaciones a servicios externos (Artifacts, Drive, etc.) para la
+  revisión de dudosos: se revisan en local.

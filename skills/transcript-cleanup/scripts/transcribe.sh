@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-# Transcribe uno o varios audios (mp3/m4a/wav) con Deepgram (nova-3, detección automática de
-# idioma). Omite archivos que ya tienen un JSON válido (sin err_code).
+# Transcribe uno o varios audios (mp3/m4a/wav) o videos (mp4/mov/mkv/webm) con Deepgram (nova-3,
+# detección automática de idioma). Omite archivos que ya tienen un JSON válido (sin err_code).
+#
+# De un video se extrae solo el audio (mono, 16 kHz, AAC) con ffmpeg antes de enviarlo: subir el
+# video entero es más lento y no mejora nada. El video original se sigue usando después para cortar
+# clips de los tramos dudosos (make_clips.py, vía `media` en cfg.json).
 #
 # Uso:
 #   transcribe.sh <carpeta_audios> [<carpeta_salida>] [archivo1 archivo2 ...]
@@ -59,9 +63,16 @@ print(s)
 content_type_for() {
   case "${1##*.}" in
     mp3|MP3) echo "audio/mpeg" ;;
-    m4a|M4A|mp4|MP4) echo "audio/mp4" ;;
+    m4a|M4A) echo "audio/mp4" ;;
     wav|WAV) echo "audio/wav" ;;
     *) echo "audio/mpeg" ;;
+  esac
+}
+
+is_video() {
+  case "${1##*.}" in
+    mp4|MP4|mov|MOV|mkv|MKV|webm|WEBM) return 0 ;;
+    *) return 1 ;;
   esac
 }
 
@@ -76,19 +87,29 @@ transcribe_one() {
   mkdir -p "$outdir"
   json_out="$outdir/${slug}_deepgram.json"
   ctype="$(content_type_for "$audio")"
+  local upload="$audio" tmp=""
 
   if [ -s "$json_out" ] && ! grep -q '"err_code"' "$json_out" 2>/dev/null; then
     echo "SKIP (ya existe): $base -> $json_out"
     return 0
   fi
 
+  if is_video "$audio"; then
+    command -v ffmpeg >/dev/null || { echo "ERROR: hace falta ffmpeg para extraer el audio de $base" >&2; return 1; }
+    tmp="$(mktemp "${TMPDIR:-/tmp}/tc_XXXXXX")"
+    echo "Extrayendo audio del video: $base"
+    ffmpeg -y -v error -i "$audio" -vn -ac 1 -ar 16000 -c:a aac -b:a 96k -f mp4 "$tmp"
+    upload="$tmp"; ctype="audio/mp4"
+  fi
+
   echo "Transcribiendo: $base -> $json_out"
   curl -sS -X POST \
     -H "Authorization: Token ${DEEPGRAM_API_KEY}" \
     -H "Content-Type: ${ctype}" \
-    --data-binary "@${audio}" \
+    --data-binary "@${upload}" \
     "https://api.deepgram.com/v1/listen?${QS}" \
     -o "$json_out"
+  [ -n "$tmp" ] && rm -f "$tmp"
 
   if grep -q '"err_code"' "$json_out" 2>/dev/null; then
     echo "  ERROR de Deepgram en $base:"
@@ -104,10 +125,11 @@ if [ "$#" -gt 0 ]; then
   done
 else
   shopt -s nullglob nocaseglob
-  files=("$AUDIOS_DIR"/*.mp3 "$AUDIOS_DIR"/*.m4a "$AUDIOS_DIR"/*.wav)
+  files=("$AUDIOS_DIR"/*.mp3 "$AUDIOS_DIR"/*.m4a "$AUDIOS_DIR"/*.wav \
+         "$AUDIOS_DIR"/*.mp4 "$AUDIOS_DIR"/*.mov "$AUDIOS_DIR"/*.mkv "$AUDIOS_DIR"/*.webm)
   shopt -u nullglob nocaseglob
   if [ ${#files[@]} -eq 0 ]; then
-    echo "No se encontraron .mp3/.m4a/.wav en $AUDIOS_DIR" >&2
+    echo "No se encontraron audios (.mp3/.m4a/.wav) ni videos (.mp4/.mov/.mkv/.webm) en $AUDIOS_DIR" >&2
     exit 1
   fi
   for f in "${files[@]}"; do
