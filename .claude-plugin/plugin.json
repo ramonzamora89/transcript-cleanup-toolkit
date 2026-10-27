@@ -1,7 +1,7 @@
 {
   "name": "transcript-cleanup-toolkit",
-  "description": "Transcribe audio (Deepgram Nova-3) and produce reviewed, timestamped .docx transcripts with a fidelity-first cleanup workflow: word-level vs utterance-level speaker segmentation, [dudoso]/[inaudible] markers, and an audio-quality diagnostic tree (volume normalization, echo/reverb detection, Whisper fallback) for recordings nova-3 can't handle.",
-  "version": "0.1.0",
+  "description": "Transcribe audio (Deepgram Nova-3) and produce reviewed, timestamped .docx transcripts with a fidelity-first cleanup workflow: word-level vs utterance-level speaker segmentation, [dudoso]/[inaudible] markers, a local review step that cuts audio/video clips of each doubtful passage and lets you pick or type the right reading, and an audio-quality diagnostic tree (volume normalization, echo/reverb detection, Whisper fallback) for recordings nova-3 can't handle.",
+  "version": "0.2.0",
   "author": {
     "name": "Ramon Zamora"
   },

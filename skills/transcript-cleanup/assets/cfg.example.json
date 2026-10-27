@@ -1,6 +1,7 @@
 {
   "id": "id_del_archivo",
   "archivo": "Nombre del audio original.mp3",
+  "media": "../../audios/Nombre del audio original.mp3",
   "idioma": "Español",
   "duracion": "00:00:00",
   "hablantes": "N hablante(s) (diarización automática)",

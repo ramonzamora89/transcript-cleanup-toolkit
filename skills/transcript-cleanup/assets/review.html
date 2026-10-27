@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revisión de dudosos</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --text: #1d2330; --muted: #5d6676; --line: #dde1e7;
+    --accent: #2e5b8a; --accent-soft: #e3ecf6; --mark: #fff1c2; --ok: #1f7a4d; --warn: #b00020;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171c; --card: #1d2128; --text: #e6e9ee; --muted: #9aa3b2; --line: #313743;
+      --accent: #7fb0e3; --accent-soft: #23344a; --mark: #4a3f17; --ok: #5cc493; --warn: #ff7a8a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { position: sticky; top: 0; z-index: 2; background: var(--bg); border-bottom: 1px solid var(--line);
+           padding: 12px 16px; }
+  .bar { display: flex; align-items: center; gap: 12px; max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 17px; margin: 0; flex: 1; }
+  .progress { height: 4px; background: var(--line); border-radius: 2px; max-width: 860px; margin: 8px auto 0; }
+  .progress > div { height: 100%; background: var(--accent); border-radius: 2px; width: 0; transition: width .2s; }
+  main { max-width: 860px; margin: 0 auto; padding: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px;
+          margin-bottom: 16px; }
+  .card.done { border-color: var(--ok); }
+  .head { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; margin-bottom: 10px; }
+  .id { font-weight: 700; color: var(--accent); }
+  .ts { font-variant-numeric: tabular-nums; color: var(--muted); }
+  .state { margin-left: auto; font-size: 13px; color: var(--muted); }
+  .done .state { color: var(--ok); }
+  audio, video { width: 100%; border-radius: 6px; }
+  video { max-height: 320px; background: #000; }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 12px; }
+  button { font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--text);
+           border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--card); }
+  .ctx { color: var(--muted); margin: 0 0 6px; }
+  .ctx mark { background: var(--mark); color: var(--text); padding: 0 3px; border-radius: 3px; }
+  .asr { font-size: 13px; color: var(--muted); margin: 0 0 12px; font-family: ui-monospace, Consolas, monospace;
+         overflow-wrap: anywhere; }
+  .opts label { display: flex; gap: 8px; align-items: flex-start; padding: 6px 8px; border-radius: 6px;
+                cursor: pointer; }
+  .opts label:hover { background: var(--accent-soft); }
+  .opts input[type=radio] { margin-top: 4px; }
+  .other { display: flex; gap: 8px; flex: 1; }
+  .other input[type=text] { flex: 1; font: inherit; padding: 4px 8px; border: 1px solid var(--line);
+                            border-radius: 6px; background: var(--bg); color: var(--text); min-width: 0; }
+  .sep { border-top: 1px dashed var(--line); margin: 6px 0; }
+  .err { color: var(--warn); font-size: 13px; }
+  .final { text-align: center; padding: 24px 16px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <h1 id="title">Revisión de dudosos</h1>
+    <span id="count" class="ts"></span>
+    <button class="primary" id="fin">Terminé</button>
+  </div>
+  <div class="progress"><div id="prog"></div></div>
+</header>
+<main id="list"><p class="ctx">Cargando…</p></main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = t => { t = Math.max(0, Math.floor(t)); return [t/3600|0, (t%3600)/60|0, t%60].map(n => String(n).padStart(2,"0")).join(":"); };
+let items = [], res = {};
+
+function updateProgress() {
+  const done = items.filter(e => res[e.id]).length;
+  $("#count").textContent = `${done} / ${items.length}`;
+  $("#prog").style.width = items.length ? (100 * done / items.length) + "%" : "0";
+}
+
+async function save(e, card, eleccion, texto) {
+  const st = card.querySelector(".state");
+  st.textContent = "guardando…";
+  try {
+    const r = await fetch("/api/resolucion", { method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ id: e.id, eleccion, texto }) });
+    if (!r.ok) throw new Error((await r.json()).error || r.status);
+    res[e.id] = { eleccion, texto };
+    card.classList.add("done");
+    st.textContent = "guardado ✓";
+    updateProgress();
+  } catch (err) {
+    st.innerHTML = `<span class="err">no se guardó: ${esc(err.message)}</span>`;
+  }
+}
+
+function render(e) {
+  const card = document.createElement("section");
+  card.className = "card";
+  const isVideo = /\.mp4$/i.test(e.clip || "");
+  const offset = Math.max(0, (e.start ?? 0) - (e.clip_inicio ?? e.start ?? 0));
+  const player = e.clip
+    ? (isVideo ? `<video controls preload="metadata" src="/clips/${encodeURIComponent(e.clip)}"></video>`
+               : `<audio controls preload="metadata" src="/clips/${encodeURIComponent(e.clip)}"></audio>`)
+    : `<p class="err">Sin clip — correr make_clips.py.</p>`;
+  const opts = (e.opciones || []).map((o, k) =>
+    `<label><input type="radio" name="${e.id}" value="opcion" data-texto="${esc(o)}"> <span>${esc(o)}</span></label>`).join("");
+  card.innerHTML = `
+    <div class="head">
+      <span class="id">${esc(e.id)}</span>
+      <span class="ts">[${fmt(e.start ?? 0)}–${fmt(e.end ?? 0)}]</span>
+      <span>${esc(e.label || "")}</span>
+      <span class="state">pendiente</span>
+    </div>
+    ${player}
+    <div class="controls">
+      <button data-act="tramo">▶ Escuchar el tramo</button>
+      <button data-act="inicio">⟲ Clip completo</button>
+      <button data-act="lento">Velocidad 0.75×</button>
+    </div>
+    <p class="ctx">…${esc((e.contexto?.antes || "").slice(-140))} <mark>${esc(e.marcador)}</mark> ${esc((e.contexto?.despues || "").slice(0, 140))}…</p>
+    ${e.asr ? `<p class="asr">ASR: ${esc(e.asr)}</p>` : ""}
+    <div class="opts">
+      ${opts}
+      <label><input type="radio" name="${e.id}" value="otro"> <span class="other">
+        <input type="text" placeholder="Otra opción: escribe lo que oyes"><button data-act="otro">Guardar</button></span></label>
+      <div class="sep"></div>
+      <label><input type="radio" name="${e.id}" value="inaudible"> <span>[inaudible]</span></label>
+      <label><input type="radio" name="${e.id}" value="mantener"> <span>Dejar como está (${esc(e.marcador)})</span></label>
+    </div>`;
+
+  const media = card.querySelector("audio, video");
+  const txt = card.querySelector(".other input[type=text]");
+  card.querySelector(".controls").addEventListener("click", ev => {
+    const act = ev.target.dataset.act;
+    if (!media || !act) return;
+    if (act === "tramo") { media.currentTime = offset; media.play(); }
+    if (act === "inicio") { media.currentTime = 0; media.play(); }
+    if (act === "lento") {
+      media.playbackRate = media.playbackRate === 1 ? 0.75 : 1;
+      ev.target.textContent = media.playbackRate === 1 ? "Velocidad 0.75×" : "Velocidad 1×";
+    }
+  });
+  card.querySelectorAll("input[type=radio]").forEach(r => r.addEventListener("change", () => {
+    if (r.value === "otro") { txt.focus(); if (txt.value.trim()) save(e, card, "otro", txt.value); return; }
+    save(e, card, r.value, r.dataset.texto || "");
+  }));
+  const saveOther = () => {
+    if (!txt.value.trim()) { txt.focus(); return; }
+    card.querySelector('input[value="otro"]').checked = true;
+    save(e, card, "otro", txt.value);
+  };
+  card.querySelector('[data-act="otro"]').addEventListener("click", ev => { ev.preventDefault(); saveOther(); });
+  txt.addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); saveOther(); } });
+
+  const prev = res[e.id];
+  if (prev) {
+    card.classList.add("done");
+    card.querySelector(".state").textContent = "guardado ✓";
+    let radio;
+    if (prev.eleccion === "opcion") radio = [...card.querySelectorAll('input[value="opcion"]')].find(r => r.dataset.texto === prev.texto);
+    if (!radio && prev.eleccion !== "opcion") radio = card.querySelector(`input[value="${prev.eleccion}"]`);
+    if (prev.eleccion === "otro") txt.value = prev.texto;
+    if (radio) radio.checked = true;
+  }
+  return card;
+}
+
+async function init() {
+  const data = await (await fetch("/api/dudosos")).json();
+  items = data.items || []; res = data.resoluciones || {};
+  $("#title").textContent = `Revisión de dudosos — ${data.id}`;
+  const list = $("#list"); list.innerHTML = "";
+  if (!items.length) list.innerHTML = `<p class="ctx">No hay tramos dudosos en dudosos.json.</p>`;
+  items.forEach(e => list.appendChild(render(e)));
+  updateProgress();
+}
+
+$("#fin").addEventListener("click", async () => {
+  const pend = items.filter(e => !res[e.id]).length;
+  await fetch("/api/fin", { method: "POST" }).catch(() => {});
+  $("#list").innerHTML = `<div class="final"><h2>Revisión guardada</h2>
+    <p>${items.length - pend} de ${items.length} tramos resueltos${pend ? ` · ${pend} quedan como pendientes` : ""}.</p>
+    <p class="ctx">Vuelve al chat y escribe «listo» para aplicar las elecciones a la transcripción.</p></div>`;
+  $("#fin").disabled = true;
+});
+
+init().catch(err => { $("#list").innerHTML = `<p class="err">No se pudo cargar: ${esc(err.message)}</p>`; });
+</script>
+</body>
+</html>

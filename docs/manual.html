@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Manual de instalación y uso — transcript-cleanup-toolkit</title>
+<style>
+  @page {
+    size: A4;
+    margin: 2.2cm 2cm 2.4cm 2cm;
+    @bottom-center {
+      content: "transcript-cleanup-toolkit — Manual de instalación y uso";
+      font-family: 'Poppins', sans-serif;
+      font-size: 8pt;
+      color: #94a3b8;
+    }
+    @bottom-right {
+      content: counter(page) " / " counter(pages);
+      font-family: 'Poppins', sans-serif;
+      font-size: 8pt;
+      color: #94a3b8;
+    }
+  }
+  @page cover {
+    margin: 0;
+    @bottom-center { content: none; }
+    @bottom-right { content: none; }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
+    color: #0f172a;
+    font-size: 10.5pt;
+    line-height: 1.55;
+  }
+  h1, h2, h3 { font-weight: 700; color: #0f172a; }
+  h1 { font-size: 20pt; margin: 0 0 6pt; }
+  h2 {
+    font-size: 14pt;
+    margin: 22pt 0 8pt;
+    padding-bottom: 5pt;
+    border-bottom: 2px solid #2E5B8A;
+    page-break-after: avoid;
+  }
+  h3 { font-size: 11.5pt; margin: 14pt 0 4pt; color: #1e40af; page-break-after: avoid; }
+  h4 { font-size: 10.5pt; margin: 10pt 0 3pt; color: #334155; page-break-after: avoid; }
+  p { margin: 0 0 8pt; }
+  ul, ol { margin: 0 0 10pt; padding-left: 18pt; }
+  li { margin-bottom: 4pt; }
+  a { color: #1e40af; }
+  strong { font-weight: 600; }
+  code {
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    background: #f1f5f9;
+    padding: 1pt 4pt;
+    border-radius: 3pt;
+    font-size: 9.3pt;
+    color: #b91c1c;
+  }
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 9pt 11pt;
+    border-radius: 6pt;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 8.6pt;
+    line-height: 1.5;
+    margin: 6pt 0 12pt;
+    white-space: pre-wrap;
+    page-break-inside: avoid;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+  .cover {
+    page: cover;
+    height: 100vh;
+    background: linear-gradient(160deg, #0b1220 0%, #17385c 55%, #2E5B8A 100%);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3.5cm;
+  }
+  .cover .eyebrow {
+    font-size: 10.5pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #93c5fd;
+    margin-bottom: 14pt;
+  }
+  .cover h1 {
+    color: #ffffff;
+    font-size: 30pt;
+    line-height: 1.25;
+    margin-bottom: 14pt;
+  }
+  .cover p.sub {
+    font-size: 12pt;
+    color: #dbeafe;
+    max-width: 11cm;
+  }
+  .cover .footer-note {
+    position: absolute;
+    bottom: 2.2cm;
+    left: 3.5cm;
+    font-size: 9pt;
+    color: #93c5fd;
+  }
+
+  .callout {
+    border-left: 4px solid #2E5B8A;
+    background: #eff6ff;
+    padding: 8pt 12pt;
+    border-radius: 0 6pt 6pt 0;
+    margin: 10pt 0;
+    font-size: 9.8pt;
+    page-break-inside: avoid;
+  }
+  .callout.warning {
+    border-left-color: #e74c3c;
+    background: #fef2f2;
+  }
+  .callout.field {
+    border-left-color: #0f766e;
+    background: #ecfdf5;
+  }
+  .callout .label {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 8pt;
+    letter-spacing: 0.06em;
+    display: block;
+    margin-bottom: 3pt;
+  }
+  .callout.warning .label { color: #b91c1c; }
+  .callout.field .label { color: #0f766e; }
+  .callout:not(.warning):not(.field) .label { color: #1e40af; }
+
+  .step-title {
+    display: flex;
+    align-items: center;
+    gap: 8pt;
+    page-break-after: avoid;
+  }
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22pt;
+    height: 22pt;
+    border-radius: 50%;
+    background: #2E5B8A;
+    color: #fff;
+    font-size: 11pt;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .manual-step { page-break-inside: avoid; margin-bottom: 4pt; }
+
+  table { width: 100%; border-collapse: collapse; margin: 8pt 0 12pt; font-size: 9.3pt; }
+  th, td { text-align: left; padding: 5pt 8pt; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  th { background: #f1f5f9; font-weight: 600; }
+
+  .toc { margin: 10pt 0 0; }
+  .toc a { text-decoration: none; color: #0f172a; }
+  .toc-item { display: flex; justify-content: space-between; padding: 4.5pt 0; border-bottom: 1px dotted #cbd5e1; font-size: 10.5pt; }
+  .toc-item .num { color: #2E5B8A; font-weight: 700; width: 1.1cm; flex-shrink: 0; }
+  .toc-item .txt { flex: 1; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="eyebrow">Manual de instalación y uso</div>
+  <h1>Plugin transcript-cleanup-toolkit<br>para Claude Code</h1>
+  <p class="sub">De audio crudo a transcripción de revisión: Deepgram Nova-3, diagnóstico de calidad de audio, reconstrucción de turnos por hablante y un <code>.docx</code> con marcas de tiempo reales, fiel a lo dicho.</p>
+  <div class="footer-note">github.com/ramonzamora89/transcript-cleanup-toolkit · v0.2.0 · octubre de 2026</div>
+</div>
+
+<h1>Contenido</h1>
+<div class="toc">
+  <div class="toc-item"><span class="num">1</span><span class="txt">Qué es este plugin (y qué no hace por vos)</span></div>
+  <div class="toc-item"><span class="num">2</span><span class="txt">Requisitos previos</span></div>
+  <div class="toc-item"><span class="num">3</span><span class="txt">Instalación en la terminal (Claude Code CLI)</span></div>
+  <div class="toc-item"><span class="num">4</span><span class="txt">Instalación y uso en la app Claude Desktop (pestaña Code)</span></div>
+  <div class="toc-item"><span class="num">5</span><span class="txt">Montar el proyecto que va a usar el plugin</span></div>
+  <div class="toc-item"><span class="num">6</span><span class="txt">Flujo de trabajo completo, paso a paso</span></div>
+  <div class="toc-item"><span class="num">7</span><span class="txt">Árbol de decisión: cuando Deepgram no devuelve habla</span></div>
+  <div class="toc-item"><span class="num">8</span><span class="txt">Cómo se ha usado en proyectos reales</span></div>
+  <div class="toc-item"><span class="num">9</span><span class="txt">Gotchas ya pagados (tabla de referencia)</span></div>
+  <div class="toc-item"><span class="num">10</span><span class="txt">Qué NO hacer</span></div>
+  <div class="toc-item"><span class="num">11</span><span class="txt">Solución de problemas</span></div>
+  <div class="toc-item"><span class="num">12</span><span class="txt">Referencia rápida</span></div>
+</div>
+
+<h2 id="que-es">1. Qué es este plugin (y qué no hace por vos)</h2>
+
+<p><strong>transcript-cleanup-toolkit</strong> es un plugin de Claude Code que empaqueta el flujo
+completo para convertir una grabación —entrevista, taller, panel, programa de radio o TV— en una
+transcripción <code>.docx</code> de revisión: transcripción con Deepgram Nova-3, diagnóstico de
+calidad de audio, reconstrucción de turnos por hablante (por <em>utterance</em> o por palabra,
+según cuál capture mejor la conversación) y un documento final con marcas de tiempo reales.</p>
+
+<p>El plugin trae <strong>un skill</strong>, <code>transcript-cleanup</code>, con cinco scripts y
+dos referencias. Se activa solo dentro de una sesión de Claude Code cuando pedís transcribir o
+limpiar una grabación; no hay que invocarlo con un comando especial.</p>
+
+<h3>Lo que aporta el plugin</h3>
+<ul>
+  <li>El <strong>pipeline mecánico</strong>: llamada a Deepgram, diagnóstico, construcción de
+    turnos desde el JSON crudo y generación del documento.</li>
+  <li>El <strong>árbol de decisión de calidad de audio</strong>: qué medir y en qué orden cuando
+    una grabación devuelve poco o nada.</li>
+  <li>Los <strong>principios de limpieza</strong>: no inventar, <code>[dudoso]</code> /
+    <code>[inaudible]</code> con marca de tiempo exacta, fidelidad sobre pulido.</li>
+</ul>
+
+<h3>Lo que no trae, a propósito</h3>
+<ul>
+  <li><strong>Glosario de dominio.</strong> Los nombres propios, siglas e instituciones de cada
+    proyecto viven en el proyecto, no en el plugin.</li>
+  <li><strong>Convención de etiquetas de hablante.</strong> <code>Hablante 1/2</code>,
+    <code>Entrevistador(a)/R</code> o nombres reales: lo decide cada proyecto.</li>
+  <li><strong>Política de datos sensibles.</strong> Si se tokenizan nombres de personas —y con qué
+    etiquetas— es una decisión del proyecto, no del plugin.</li>
+</ul>
+
+<div class="callout">
+  <span class="label">La parte que sigue siendo humana</span>
+  La limpieza fina —decidir si un tramo raro es una palabra mal transcrita o un cambio de hablante
+  que la diarización no detectó— no se automatiza. El skill la sistematiza: dice qué comparar, qué
+  marcar y qué dejar registrado. El criterio lo sigue poniendo quien revisa.
+</div>
+
+<h2 id="requisitos">2. Requisitos previos</h2>
+
+<table>
+  <tr><th>Qué</th><th>Para qué</th><th>Cómo verificar</th></tr>
+  <tr><td><strong>Claude Code</strong> (CLI o app Desktop)</td><td>Ejecutar el skill</td><td><code>claude --version</code></td></tr>
+  <tr><td><strong>Clave de Deepgram</strong> en <code>DEEPGRAM_API_KEY</code></td><td>Transcribir</td><td><code>echo $DEEPGRAM_API_KEY</code></td></tr>
+  <tr><td><strong>ffmpeg</strong></td><td>Medir volumen, detectar contrafase, normalizar</td><td><code>ffmpeg -version</code></td></tr>
+  <tr><td><strong>Python 3</strong></td><td>Diagnóstico y construcción de turnos</td><td><code>python3 --version</code></td></tr>
+  <tr><td><strong>Node.js</strong> + librería <code>docx</code></td><td>Generar el <code>.docx</code> final</td><td><code>node --version</code></td></tr>
+</table>
+
+<p>La librería <code>docx</code> se instala una sola vez dentro del skill:</p>
+
+<pre><code>cd &lt;ruta-del-plugin&gt;/skills/transcript-cleanup
+npm install</code></pre>
+
+<div class="callout warning">
+  <span class="label">Ojo con dónde queda node_modules</span>
+  Si instalás el plugin desde el marketplace, la copia que usa Claude Code vive en
+  <code>~/.claude/plugins/cache/</code> y <strong>no</strong> trae <code>node_modules</code>. Ver
+  §11 (<em>«Cannot find module 'docx'»</em>) para las dos formas de resolverlo.
+</div>
+
+<h2 id="instalacion-cli">3. Instalación en la terminal (Claude Code CLI)</h2>
+
+<p>El repositorio funciona como su propio <em>marketplace</em> de Claude Code: no hace falta que
+esté en ningún catálogo de Anthropic, basta con que sea un repositorio público con el manifiesto
+<code>.claude-plugin/marketplace.json</code> en la raíz —este ya lo tiene.</p>
+
+<p>Dentro de una sesión de Claude Code, en cualquier proyecto:</p>
+
+<pre><code>/plugin marketplace add ramonzamora89/transcript-cleanup-toolkit
+/plugin install transcript-cleanup-toolkit@transcript-cleanup-toolkit</code></pre>
+
+<p>El nombre después de <code>@</code> es el del <strong>marketplace</strong> (definido en
+<code>marketplace.json</code>), que en este caso coincide con el del plugin. Verificá con
+<code>/plugin</code> que aparezca instalado y habilitado.</p>
+
+<h3>Qué queda en disco</h3>
+<table>
+  <tr><th>Qué</th><th>Dónde</th></tr>
+  <tr><td>Registro de marketplaces conocidos</td><td><code>~/.claude/plugins/known_marketplaces.json</code></td></tr>
+  <tr><td>Clon del marketplace</td><td><code>~/.claude/plugins/marketplaces/transcript-cleanup-toolkit/</code></td></tr>
+  <tr><td>Copia instalada del plugin</td><td><code>~/.claude/plugins/cache/transcript-cleanup-toolkit/transcript-cleanup-toolkit/0.2.0/</code></td></tr>
+</table>
+
+<h3>Actualizar y desinstalar</h3>
+<pre><code>/plugin marketplace update transcript-cleanup-toolkit   # trae cambios del repo
+/plugin                                                  # habilitar, deshabilitar o desinstalar</code></pre>
+
+<h3>Alternativa sin marketplace (repositorio clonado a mano)</h3>
+<pre><code>claude --plugin-dir /ruta/local/transcript-cleanup-toolkit</code></pre>
+<p>Carga el plugin solo para esa sesión, sin pasar por GitHub. Útil mientras se edita el propio
+plugin: los cambios se ven de inmediato, sin reinstalar.</p>
+
+<h2 id="desktop">4. Instalación y uso en la app Claude Desktop (pestaña Code)</h2>
+
+<p>La app de escritorio de Claude tiene tres pestañas: <strong>Chat</strong> para conversaciones,
+<strong>Cowork</strong> para trabajo agéntico largo y <strong>Code</strong>, que es Claude Code con
+interfaz gráfica. Todo lo de este manual corre en la pestaña <strong>Code</strong>.</p>
+
+<div class="callout warning">
+  <span class="label">La confusión más cara de esta sección</span>
+  <p style="margin:0">En la barra lateral hay un menú <strong>Customize &rarr; Plugins</strong>. Ese
+  instalador es para <strong>Chat y Cowork</strong>: su configuración se sincroniza con tu cuenta de
+  claude.ai y <strong>no</strong> alimenta las sesiones de la pestaña Code.</p>
+  <p style="margin:6pt 0 0">Los plugins de Claude Code —este entre ellos— se instalan
+  <strong>desde dentro de la sesión</strong> de la pestaña Code, y viven en <code>~/.claude</code>,
+  compartido con la CLI.</p>
+</div>
+
+<h3>4.1 Instalar el plugin en la pestaña Code</h3>
+
+<div class="manual-step">
+  <div class="step-title"><span class="step-num">1</span><h4 style="margin:0">Abrir una sesión</h4></div>
+  <p>Pestaña <strong>Code</strong> &rarr; nueva sesión &rarr; elegir la <strong>carpeta del
+  proyecto</strong> donde están (o van a estar) los audios. Cada sesión tiene su propia carpeta,
+  su historial y sus cambios.</p>
+</div>
+
+<div class="manual-step">
+  <div class="step-title"><span class="step-num">2</span><h4 style="margin:0">Registrar el marketplace</h4></div>
+  <p>En el cuadro de texto de la sesión, escribir:</p>
+  <pre><code>/plugin marketplace add ramonzamora89/transcript-cleanup-toolkit</code></pre>
+  <p>Como el registro de marketplaces es el mismo archivo que usa la CLI
+  (<code>~/.claude/plugins/known_marketplaces.json</code>), si ya lo agregaste alguna vez desde la
+  terminal, este paso ya está hecho.</p>
+</div>
+
+<div class="manual-step">
+  <div class="step-title"><span class="step-num">3</span><h4 style="margin:0">Instalarlo desde el navegador de plugins</h4></div>
+  <p>Botón <strong>+</strong> junto al cuadro de texto &rarr; <strong>Plugins</strong> &rarr;
+  <strong>Add plugin</strong>. Ahí aparece <em>transcript-cleanup-toolkit</em> entre los plugins de
+  los marketplaces configurados. <strong>Manage plugins</strong> sirve para habilitarlo,
+  deshabilitarlo o desinstalarlo. El mismo submenú muestra los skills que aporta cada plugin
+  instalado.</p>
+</div>
+
+<h3>4.2 La clave de Deepgram en Desktop (paso obligatorio)</h3>
+
+<p>La app de escritorio <strong>no hereda tu entorno de shell completo</strong>. En macOS lee
+<code>~/.zshrc</code> solo para armar el <code>PATH</code> y un conjunto fijo de variables de
+Claude Code; en Windows toma las variables de usuario y sistema pero no lee los perfiles de
+PowerShell. Es decir: <strong>un <code>export DEEPGRAM_API_KEY=...</code> en tu <code>.zshrc</code>
+no llega a la sesión de Desktop.</strong></p>
+
+<p>Dos formas de resolverlo, en orden de preferencia:</p>
+<ol>
+  <li><strong>Editor de entorno local.</strong> En el cuadro de texto, abrir el desplegable de
+    entorno, pasar el cursor por <strong>Local</strong> y hacer clic en el ícono de engranaje. Las
+    variables que guardes ahí quedan cifradas en tu máquina y aplican a todas las sesiones locales.
+    Agregá <code>DEEPGRAM_API_KEY</code>.</li>
+  <li><strong>Clave <code>env</code> de <code>~/.claude/settings.json</code>.</strong> Aplica a las
+    sesiones de Claude Code (no a servidores de desarrollo). Sirve igual para este caso.</li>
+</ol>
+
+<div class="callout">
+  <span class="label">Alternativa por proyecto</span>
+  Si preferís no guardar la clave a nivel de máquina, dejá un <code>.env</code> en la carpeta del
+  proyecto (con <code>.env</code> en el <code>.gitignore</code>) y cargalo en la terminal integrada
+  antes de correr los scripts: <code>set -a; source .env; set +a</code>. Es lo que se hace en el
+  proyecto BID_Cuali.
+</div>
+
+<h3>4.3 La terminal integrada</h3>
+
+<p><strong>Ctrl</strong> + <strong>`</strong> abre un panel de terminal dentro de la sesión, en la
+misma carpeta de trabajo y con el mismo entorno que ve Claude. Ahí corren cómodo los pasos
+manuales del flujo: <code>npm install</code>, los <code>ffmpeg</code> de diagnóstico o
+<code>node build_transcript.js</code>. Solo está disponible en sesiones locales.</p>
+
+<h3>4.4 Diferencias con la CLI que importan para este flujo</h3>
+<table>
+  <tr><th>Tema</th><th>CLI</th><th>Desktop (pestaña Code)</th></tr>
+  <tr><td>Plugins</td><td>Comando <code>/plugin</code></td><td>Botón <strong>+</strong> &rarr; Plugins (interfaz gráfica)</td></tr>
+  <tr><td>Ajustes y permisos</td><td colspan="2">Los mismos archivos: <code>~/.claude/settings.json</code> y el <code>.claude/settings.json</code> del proyecto</td></tr>
+  <tr><td>Variables de entorno</td><td>Las del shell</td><td>Editor de entorno local o <code>env</code> en settings</td></tr>
+  <tr><td>Varias grabaciones a la vez</td><td>Varias terminales</td><td>Sesiones en paralelo en la barra lateral</td></tr>
+  <tr><td>Sesiones en la nube</td><td>—</td><td>Disponibles, pero el navegador de plugins no funciona ahí: hay que declarar el plugin en <code>enabledPlugins</code> del <code>.claude/settings.json</code> del repositorio</td></tr>
+</table>
+
+<p>Para mover una sesión de la terminal a la app: <code>/desktop</code>.</p>
+
+<h2 id="proyecto">5. Montar el proyecto que va a usar el plugin</h2>
+
+<p>El plugin es genérico; el proyecto aporta el contexto. Esta es la estructura que quedó probada
+en los proyectos que ya lo usan:</p>
+
+<pre><code>mi-proyecto/
+├── .env                          # DEEPGRAM_API_KEY (y en .gitignore)
+├── CLAUDE.md                     # convenciones de trabajo del proyecto
+├── audio/                        # grabaciones originales
+├── deepgram_json/                # respuestas crudas de la API
+├── limpieza/                     # carpeta de trabajo del pipeline
+│   ├── package.json              # dependencia: docx
+│   ├── references/
+│   │   ├── glosario-&lt;proyecto&gt;.md        # nombres, siglas, instituciones
+│   │   └── limpieza-criterios-&lt;proyecto&gt;.md
+│   └── procesados/
+│       └── &lt;ID&gt;/                 # una carpeta por grabación
+│           ├── merged_words_&lt;ID&gt;.json
+│           ├── turns_ts.json
+│           ├── cfg.json
+│           └── &lt;ID&gt;_transcripcion.docx
+└── transcripciones/              # los .docx finales, ya revisados</code></pre>
+
+<h3>Los dos archivos de referencia del proyecto</h3>
+
+<p>El plugin trae <code>references/criterios-limpieza-ejemplo.md</code> como plantilla. Copialo al
+proyecto y completalo. Lo que va en cada uno:</p>
+
+<table>
+  <tr><th>Archivo</th><th>Qué documenta</th></tr>
+  <tr>
+    <td><code>glosario-&lt;proyecto&gt;.md</code></td>
+    <td>Términos <strong>confirmados</strong> y sus variantes fonéticas en el ASR: nombres de
+    instituciones, siglas, programas, comunidades. Cada entrada dice a qué forma se estandariza y
+    si ya está confirmada (entonces no va como pendiente en el documento).</td>
+  </tr>
+  <tr>
+    <td><code>limpieza-criterios-&lt;proyecto&gt;.md</code></td>
+    <td>Lo específico de estas grabaciones: si los turnos se construyen por palabra o por
+    utterance y por qué, convención de etiquetas de hablante, política de tokenización, qué se
+    marca <code>[dudoso]</code> y qué se corrige de plano.</td>
+  </tr>
+</table>
+
+<div class="callout warning">
+  <span class="label">No mezclar glosarios entre proyectos</span>
+  Es tentador reutilizar el glosario de otro proyecto como base —y está bien copiarlo como
+  plantilla—, pero no como contenido. Si dos proyectos resultan tratar del mismo tema o los mismos
+  actores (pasa más seguido de lo que parece), documentarlo explícitamente en vez de fusionar las
+  configuraciones.
+</div>
+
+<h3>Registrar el flujo en el <code>CLAUDE.md</code> del proyecto</h3>
+<p>Conviene dejar una línea en el <code>CLAUDE.md</code> que diga qué skill se usa y con qué
+configuración, para que cualquier sesión futura no reinvente el flujo. Por ejemplo:</p>
+<pre><code>| Audio → transcripción | Skill `transcript-cleanup-toolkit:transcript-cleanup`,
+  con la configuración de `limpieza/references/` |</code></pre>
+
+<h2 id="flujo">6. Flujo de trabajo completo, paso a paso</h2>
+
+<pre><code>audio o video ──(transcribe.sh)───────────────► &lt;id&gt;_deepgram.json
+   ──(diagnose_audio.py)────► ¿problema de audio? → normalizar → re-transcribir
+   ──(build_turns.py / build_turns_words.py)──► merged.json / merged_words_&lt;id&gt;.json
+   ──(limpieza fina, criterio humano)─────────► turns_ts.json + cfg.json
+   ──(find_dudosos.py + make_clips.py)────────► dudosos.json + clips_dudosos/
+   ──(revisión escuchando: página o chat)─────► resoluciones.json
+   ──(apply_resoluciones.py)──────────────────► turns_ts.json + pendientes actualizados
+   ──(build_transcript.js)────────────────────► &lt;id&gt;_transcripcion.docx</code></pre>
+
+<table>
+  <tr><th>#</th><th>Paso</th><th>Tipo</th></tr>
+  <tr><td>0</td><td><code>scripts/transcribe.sh</code></td><td>Script (llama a Deepgram)</td></tr>
+  <tr><td>0.5</td><td><code>scripts/diagnose_audio.py</code></td><td>Script (verificación obligatoria en audios largos)</td></tr>
+  <tr><td>1</td><td><code>scripts/build_turns.py</code> y <code>build_turns_words.py</code></td><td>Script (correr ambos y comparar)</td></tr>
+  <tr><td>2</td><td>Limpieza fina turno por turno</td><td>Manual, con Claude asistiendo</td></tr>
+  <tr><td>2.5</td><td>Revisión de dudosos con clips (<code>find_dudosos.py</code>, <code>make_clips.py</code>, <code>review_server.py</code>, <code>apply_resoluciones.py</code>)</td><td>Scripts + elección humana (opcional)</td></tr>
+  <tr><td>3</td><td><code>cfg.json</code> + <code>scripts/build_transcript.js</code></td><td>Manual + script</td></tr>
+</table>
+
+<h3>Paso 0 · Transcribir</h3>
+
+<pre><code>export DEEPGRAM_API_KEY=...                  # o cargar el .env del proyecto
+
+scripts/transcribe.sh audio/                             # toda la carpeta
+scripts/transcribe.sh audio/ transcripciones/            # con carpeta de salida explícita
+scripts/transcribe.sh audio/ transcripciones/ "E01.m4a"  # un archivo puntual
+
+KEYTERMS="COVIAL,Guatecompras,CUTRIGUA" scripts/transcribe.sh audio/   # con glosario</code></pre>
+
+<p>El script arma un <em>slug</em> por archivo y escribe
+<code>&lt;salida&gt;/&lt;slug&gt;/&lt;slug&gt;_deepgram.json</code>. Salta los archivos que ya tienen
+un JSON válido, así que se puede volver a correr sobre la carpeta completa sin recobrar lo ya
+transcrito. Detecta el <em>Content-Type</em> según la extensión (<code>.mp3</code>,
+<code>.m4a</code>/<code>.mp4</code>, <code>.wav</code>).</p>
+
+<p>Parámetros por defecto:
+<code>model=nova-3&amp;detect_language=true&amp;diarize=true&amp;utterances=true&amp;utt_split=0.8&amp;smart_format=true&amp;punctuate=true</code>.</p>
+
+<div class="callout warning">
+  <span class="label">Dos parámetros que conviene revisar antes de una tanda larga</span>
+  <p style="margin:0"><strong><code>detect_language=true</code> &rarr; <code>language=es</code>.</strong>
+  En grabaciones largas la detección automática descarta tramos enteros de habla real. En un grupo
+  focal del proyecto Xochi costaba cerca del 9&nbsp;% de las palabras. Si sabés el idioma, fijalo:
+  editá la línea <code>QS=</code> de <code>transcribe.sh</code> o llamá a <code>curl</code> a mano.</p>
+  <p style="margin:6pt 0 0"><strong><code>smart_format=true</code> corrompe cifras habladas.</strong>
+  «Tres mil seiscientos millones» salió como <code>600003000</code>. Si la grabación tiene datos
+  numéricos que importan, ver §7.4.</p>
+</div>
+
+<h4>Keyterms</h4>
+<p>Términos propios poco comunes: nombres de instituciones, siglas, programas. Máximo ~100
+términos cortos; cargar de más empeora los resultados. <strong>No</strong> incluir nombres de
+personas si el proyecto los va a tokenizar después, ni términos que sesguen lo que se espera oír.
+Aun con keyterms, el reconocimiento falla: en un programa de 46 minutos con ~35 términos cargados,
+«Guatecompras» salió como «guarticombras». Revisá variantes fonéticas antes de concluir que un
+tema no se mencionó.</p>
+
+<h3>Paso 0.5 · Diagnóstico</h3>
+
+<pre><code>python3 scripts/diagnose_audio.py &lt;id&gt;_deepgram.json [--gap-threshold 30] [--wpm-threshold 80]</code></pre>
+
+<p>Calcula palabras por minuto y reporta huecos de silencio largos. Una conversación normal ronda
+<strong>100–150 palabras/min</strong>. Muy por debajo no significa que «no se habló mucho»: casi
+siempre es un problema de captación. <strong>Correlo siempre en archivos de más de 15–20
+minutos, antes de invertir tiempo en limpieza fina.</strong> Si dispara alguna alerta, seguí el
+árbol de la §7.</p>
+
+<h3>Paso 1 · Construir los turnos</h3>
+
+<pre><code>python3 scripts/build_turns.py       &lt;id&gt;_deepgram.json merged.json
+python3 scripts/build_turns_words.py &lt;id&gt;_deepgram.json merged_words_&lt;id&gt;.json</code></pre>
+
+<p>Correr <strong>los dos</strong> y comparar el número de turnos:</p>
+<ul>
+  <li><code>build_turns.py</code> agrupa por <code>utterances</code>, como ya los entrega Deepgram.</li>
+  <li><code>build_turns_words.py</code> agrupa palabra por palabra según el <code>speaker</code> de
+    cada una.</li>
+</ul>
+
+<p>Si la versión por palabra da <strong>notablemente más turnos</strong>, es porque
+<code>utterances</code> está fundiendo intervenciones cortas de un hablante dentro del turno largo
+de otro —típico de grabaciones con un solo micrófono o con un hablante dominante—. En el piloto
+E04S24 del proyecto Xochi pasó de <strong>43 turnos a 75</strong>, y corrigió la mayoría de las
+atribuciones erróneas sin tocar el contenido. Si ambos métodos dan lo mismo, no hace falta
+reconstruir nada especial.</p>
+
+<div class="callout">
+  <span class="label">Etiquetas de hablante</span>
+  Si el archivo ya tuvo una limpieza previa con una convención establecida, preservala al
+  reconstruir: no reasignes etiquetas solo porque cambió el orden de primera aparición. Si es la
+  primera pasada, asignar por orden de aparición; si un nombre real se confirma, usarlo.
+</div>
+
+<h3>Paso 2 · Limpieza fina</h3>
+
+<p>Es el paso que necesita criterio. Sobre cada turno reconstruido:</p>
+
+<ol>
+  <li><strong>No inventar.</strong> Tramo que no se entiende: <code>[inaudible]</code>. Probable
+    pero no seguro: <code>[dudoso: hipótesis]</code>, con el <strong>timestamp exacto</strong>, no
+    aproximado, para que se pueda ubicar y confirmar contra el audio.</li>
+  <li><strong>Fidelidad sobre pulido.</strong> Corregir errores del ASR y puntuación; conservar
+    muletillas, regionalismos y disfluencias reales. No «mejorar» el discurso.</li>
+  <li><strong>Confianza baja ≠ solo error de palabra.</strong> Un tramo raro puede ser un cambio de
+    hablante que la diarización no detectó.</li>
+  <li><strong>Estandarizar con criterio.</strong> Un término mal transcrito de forma consistente se
+    corrige sin <code>[dudoso]</code> <em>solo si</em> el contexto interno de la misma grabación lo
+    confirma (se repite, o se dice completo en algún punto).</li>
+  <li><strong>La confirmación humana manda.</strong> Si quien encargó el trabajo escucha el audio y
+    corrige algo, eso es verdad, no una hipótesis más.</li>
+  <li><strong>Medir dos veces.</strong> En un lote, procesar y mostrar una grabación completa antes
+    de escalar a las demás.</li>
+</ol>
+
+<p>El resultado se guarda como <code>turns_ts.json</code>: una lista de objetos</p>
+<pre><code>[
+  { "i": 0, "label": "Entrevistador (a)", "ts": "00:00:00", "text": "..." },
+  { "label": "Nota de revisión", "ts": null, "text": "...", "note": true }
+]</code></pre>
+<p>Los objetos con <code>"note": true</code> salen en rojo e itálica en el documento: sirven para
+dejar constancia de un tramo dudoso sin ensuciar la transcripción.</p>
+
+<h3>Paso 2.5 · Revisión de dudosos escuchando los clips</h3>
+
+<p>La limpieza fina deja marcas <code>[dudoso: …]</code> e <code>[inaudible]</code>. En vez de buscar
+cada una a mano en el audio, el plugin corta un clip de cada tramo, propone opciones y deja que
+quien revisa escuche y elija —o escriba lo que oye—. Lo que se elige es confirmación humana: entra
+al texto sin <code>[dudoso]</code>.</p>
+<pre><code>python3 scripts/find_dudosos.py &lt;dir&gt; &lt;id&gt;_deepgram.json   # ubica cada marca en el tiempo
+#   ... Claude redacta 1-3 opciones por tramo en dudosos.json ...
+python3 scripts/make_clips.py &lt;dir&gt;                         # clips_dudosos/*.mp3 o *.mp4
+python3 scripts/review_server.py &lt;dir&gt;                      # solo en la app Desktop
+python3 scripts/apply_resoluciones.py &lt;dir&gt;                 # aplica lo elegido</code></pre>
+<ul>
+  <li><strong>Ubicación.</strong> <code>find_dudosos.py</code> estima <code>start</code>/<code>end</code> de
+    cada marca con la ventana del turno y las palabras de confianza baja; guarda el texto crudo del
+    ASR para comprobarlo. Si no cuadra, se corrige a mano en <code>dudosos.json</code>.</li>
+  <li><strong>Opciones.</strong> Solo con apoyo concreto: el ASR crudo, una variante fonética, el
+    glosario del proyecto o algo dicho en otra parte de la misma grabación. <code>[inaudible]</code> y
+    «dejar como está» se ofrecen siempre.</li>
+  <li><strong>Clips.</strong> 1,5 s antes y 1 s después de cada tramo. Si la fuente es video, el clip
+    es <code>.mp4</code> con imagen (sirve para ver quién habla); con <code>--audio-only</code>, mp3.
+    La ruta de la fuente va en <code>media</code> de <code>cfg.json</code>.</li>
+</ul>
+<p><strong>En la app Desktop (pestaña Code)</strong>, Claude levanta un servidor local en
+<code>http://127.0.0.1:8765/</code> y abre la página en el panel del navegador de la app: un
+reproductor por tramo (con «escuchar el tramo», clip completo y velocidad 0,75×), el contexto con la
+marca resaltada, las opciones y un campo «Otra opción». Cada elección se guarda al momento; el botón
+«Terminé» cierra el servidor. El audio no sale de la máquina.</p>
+<p><strong>En la terminal</strong>, Claude te dice dónde quedó <code>clips_dudosos/</code> (con un
+<code>index.md</code>) para que abras los clips con tu reproductor, y te pregunta en el chat de
+<strong>4 en 4</strong> tramos con el selector de opciones; «Otro» es para escribir tu versión.</p>
+<p>Las dos vías escriben el mismo <code>resoluciones.json</code>. <code>apply_resoluciones.py</code>
+reemplaza las marcas (respaldo en <code>turns_ts.before_review.json</code>) y anota en
+<code>pendientes</code> lo confirmado y lo que quedó sin resolver, con su timestamp.</p>
+
+<h3>Paso 3 · <code>cfg.json</code> y el documento</h3>
+
+<pre><code>{
+  "id": "E01R19",
+  "archivo": "E01R19 Bacajía II San Andrés Villa Seca.m4a",
+  "idioma": "Español",
+  "duracion": "00:51:42",
+  "hablantes": "2 hablantes (diarización automática)",
+  "notas": "Contexto real de la grabación, sin saltos de línea.",
+  "pendientes": [
+    "Turno ~00:49:09: pasaje sobre la línea de quejas quedó con audio poco claro; se dejó [dudoso]."
+  ]
+}</code></pre>
+
+<p>El <strong><code>id</code> controla el nombre del archivo de salida</strong> desde una sola
+fuente. <code>notas</code> no admite <code>\n</code>: el generador no convierte saltos de línea.
+<code>pendientes</code> se escribe con lo que de verdad quedó abierto <em>en esa</em> grabación
+—cada <code>[dudoso]</code> y cada estandarización con su marca de tiempo—; nunca se hereda una
+lista fija de otro proyecto. Campos opcionales: <code>transcripcionBase</code>,
+<code>criterioEdicion</code> y <code>estado</code>, que sobrescriben los textos por defecto de los
+metadatos.</p>
+
+<pre><code>node scripts/build_transcript.js /ruta/al/directorio/de/la/grabacion</code></pre>
+
+<p>Lee <code>cfg.json</code> + <code>turns_ts.json</code> de ese directorio y escribe
+<code>&lt;id&gt;_transcripcion.docx</code> ahí mismo, en Arial, con título, metadatos, notas del
+archivo, la transcripción (<code>Hablante N [HH:MM:SS]: texto</code>) y los pendientes de revisión
+al final.</p>
+
+<div class="callout field">
+  <span class="label">Declarar el nivel de revisión</span>
+  Un audio de 46 minutos no se revisa turno por turno sin escucha humana. Si se entrega con
+  etiquetas asignadas a mano y glosario aplicado pero sin limpieza fina completa, <strong>decirlo en
+  el propio documento</strong>. El campo <code>estado</code> y la sección de pendientes están para
+  eso.
+</div>
+
+<h2 id="diagnostico">7. Árbol de decisión: cuando Deepgram no devuelve habla</h2>
+
+<p>Antes de dar por fallida una grabación, recorrer estos cuatro chequeos en orden. Los cuatro
+salieron de casos reales.</p>
+
+<h3>7.1 ¿Es volumen bajo?</h3>
+<pre><code>ffmpeg -i audio.mp3 -af volumedetect -f null -</code></pre>
+<p>Un <code>mean_volume</code> muy negativo (por debajo de −25&nbsp;dB; se han visto −29 a −35) lo
+confirma. Normalizar:</p>
+<pre><code>ffmpeg -i audio.mp3 -af loudnorm=I=-16:TP=-1.5:LRA=11 -ar 16000 -ac 1 salida.mp3</code></pre>
+<p>Probar primero en un fragmento de 60–90 s tomado de una zona <em>sin</em> habla detectada:
+mucho más barato que reprocesar el archivo completo y confirma la hipótesis rápido. Si funciona,
+normalizar el archivo entero y volver a transcribir, guardando el JSON original como
+<code>&lt;id&gt;_deepgram_ORIGINAL_backup.json</code> antes de sobrescribir. En el proyecto Xochi,
+normalizar sumado a fijar el idioma recuperó un 13&nbsp;% de palabras en un mismo archivo.</p>
+
+<h3>7.2 ¿Están los canales en contrafase?</h3>
+<p>Este es el caso que más tiempo puede costar si no se conoce. Un directo de 91,8 minutos devolvió
+transcripción vacía con confianza 0.0. No era silencio: los dos canales estéreo estaban invertidos
+en fase. Cada canal medía −33&nbsp;dB y la suma a mono caía a −58,4&nbsp;dB —y todo motor de
+reconocimiento mezcla a mono—.</p>
+
+<pre><code>for spec in "c0=c0:L" "c0=c1:R" "c0=0.5*c0+0.5*c1:MID" "c0=0.5*c0-0.5*c1:SIDE"; do
+  ffmpeg -i AUDIO -af "pan=mono|${spec%%:*},volumedetect" -f null - 2&gt;&amp;1 | grep mean_volume
+done</code></pre>
+
+<p>Si MID se hunde frente a L y R, hay contrafase: procesar <strong>un solo canal</strong>, nunca la
+mezcla.</p>
+<pre><code>ffmpeg -i AUDIO -af "pan=mono|c0=c0,loudnorm=I=-16:TP=-1.5:LRA=11" -ar 16000 salida.mp3</code></pre>
+
+<div class="callout warning">
+  <span class="label">Cuidado con -v error</span>
+  Suprime la salida de <code>volumedetect</code> y de <code>astats</code>: parece que el comando no
+  hizo nada cuando en realidad sí midió.
+</div>
+
+<h3>7.3 ¿Es eco o reverberación?</h3>
+<p>Si nova-3 devuelve confianza 0.0 en varios puntos <em>incluso ya normalizado, con reducción de
+ruido y exportado a WAV sin comprimir</em>, el modelo está rechazando el audio: típico de eco
+fuerte, voces a muy distinta distancia del micrófono o solapamiento constante. Cruzar con Whisper
+—mismo endpoint de Deepgram, sin cómputo local— sobre un fragmento corto:</p>
+<pre><code>curl ... "https://api.deepgram.com/v1/listen?model=whisper-large&amp;language=es&amp;smart_format=true&amp;punctuate=true"</code></pre>
+<p>Si Whisper saca algo aunque sea parcial, confirma que hay habla real y que el problema es
+específico de nova-3 con esa acústica.</p>
+
+<div class="callout warning">
+  <span class="label">Whisper no es un reemplazo confiable</span>
+  Alucina texto repetitivo en tramos poco claros. Es un último recurso que necesita revisión humana
+  pesada, no limpieza fina automática: hay que avisarlo explícitamente antes de usarlo sobre un
+  archivo completo, y nunca presentar su salida como transcripción casi lista. Además, el gateway
+  de Deepgram corta los <em>requests</em> síncronos largos con <code>whisper-large</code>: fragmentar
+  en trozos de ~5 minutos y unir después.
+</div>
+
+<h3>7.4 ¿Hay cifras corrompidas?</h3>
+<p><code>smart_format=true</code> convierte los números dichos a dígitos y los corrompe: «tres mil
+seiscientos millones» salió como <code>600003000</code>, y «mil trescientos millones» como
+<code>300001000</code> —21 cifras en 92 minutos—. La solución no es adivinar del contexto:</p>
+<ol>
+  <li>Correr el mismo audio con <code>smart_format=false&amp;numerals=false</code>.</li>
+  <li>Localizar cada token de seis o más dígitos por su marca de tiempo en la corrida con formateo.</li>
+  <li>Leer la forma dicha en la corrida sin formateo y reconstruir <strong>por alineación de
+    tiempo</strong>.</li>
+</ol>
+
+<h3>7.5 Otras dos verificaciones antes de confiar en el resultado</h3>
+<ul>
+  <li><strong>La diarización.</strong> Deepgram devolvió <em>un solo hablante</em> para 99 segundos
+    de preguntas y respuestas entre una ministra y varios periodistas. Si tanto
+    <code>build_turns.py</code> como <code>build_turns_words.py</code> dan un turno para un audio que
+    claramente tiene varios hablantes, hay que segmentar a mano sobre las marcas por palabra.</li>
+  <li><strong>Quién habla no lo dice el rótulo del clip.</strong> Un reel rotulado «MINECO destina
+    Q50 millones» mostraba a la viceministra, no a la ministra. Se resolvió extrayendo fotogramas
+    con <code>ffmpeg</code> y comparándolos con la fotografía oficial. Mirar el video, no solo
+    escucharlo.</li>
+  <li><strong>Cuando un dato está en disputa, correr el reconocimiento más de una vez.</strong> Tres
+    corridas devolvieron «Valde», «Walde» y «Tribalde» para el mismo apellido. Lo que coincide en
+    dos corridas se puede estandarizar; lo que no, queda <code>[dudoso]</code> con su marca de
+    tiempo.</li>
+</ul>
+
+<h2 id="casos">8. Cómo se ha usado en proyectos reales</h2>
+
+<h3>8.1 Proyecto Xochi (BID_Cuali) — serie de entrevistas de campo</h3>
+
+<p>Diagnóstico sobre barreras socioculturales para la vinculación de mujeres a una obra vial en
+Suchitepéquez y Retalhuleu, Guatemala. Entrevistas semiestructuradas en comunidad, grabadas con un
+solo micrófono. <strong>13 de las 32 entrevistas</strong> pasaron por el pipeline completo (las 19
+anteriores son previas a la herramienta: tokenizadas, pero sin marcas de tiempo confiables ni
+limpieza fina).</p>
+
+<p>Estructura de trabajo: una carpeta <code>limpieza-transcripciones-xochi/</code> con
+<code>references/</code> (glosario + criterios) y <code>procesados/&lt;ID&gt;/</code>, una por
+entrevista, con <code>merged_words_&lt;ID&gt;.json</code>, <code>turns_ts.json</code>,
+<code>cfg.json</code> y el <code>.docx</code>. Los documentos terminados se copian a
+<code>TRANSCRIPCIONES/</code>.</p>
+
+<p>Qué aportó este proyecto al skill:</p>
+<ul>
+  <li>La construcción de turnos <strong>por palabra</strong> como opción de primera línea en
+    grabaciones de campo (piloto E04S24: 43 &rarr; 75 turnos).</li>
+  <li>Fijar <code>language=es</code> en vez de <code>detect_language=true</code> (+9&nbsp;% de
+    palabras) y normalizar con <code>loudnorm</code> (+13&nbsp;%) en un mismo grupo focal.</li>
+  <li>La regla de que <strong>un «hueco de silencio» del diagnóstico no siempre es silencio</strong>:
+    medir con <code>volumedetect</code> y transcribir el fragmento aislado antes de darlo por vacío.</li>
+  <li>Tokenización por rol (<code>[PARTICIPANTE]</code>, <code>[ESPOSA]</code>,
+    <code>[HIJA N]</code>) con comunidad y municipio en claro, porque el análisis territorial los
+    necesita. Es política del proyecto, no del plugin.</li>
+</ul>
+
+<h3>8.2 Fideicomiso / transporte — declaraciones públicas y cobertura</h3>
+
+<p>Registro de declaraciones públicas sobre la respuesta institucional al alza de combustibles.
+Aquí el material no son entrevistas propias sino clips de radio, TV y redes, más un foro completo:
+audio ajeno, sin control sobre la grabación. Estructura: <code>audio/</code>,
+<code>deepgram_json/</code>, <code>docx_build/</code> y <code>transcripciones/</code>.</p>
+
+<p>De este proyecto salieron los chequeos de la §7.2 (contrafase), §7.4 (cifras corrompidas por
+<code>smart_format</code>) y §7.5 (diarización de un solo hablante, identificación por fotogramas,
+tres corridas para un dato en disputa). También la práctica de <strong>declarar el nivel de
+revisión</strong> en el propio documento cuando no hubo escucha humana completa.</p>
+
+<div class="callout field">
+  <span class="label">Un detalle de este proyecto que vale para cualquiera</span>
+  Los reportes que ve un equipo externo no llevan nombres de herramientas, modelos ni costos. Eso
+  vive en el <code>CLAUDE.md</code> y el README del proyecto, nunca en el entregable.
+</div>
+
+<h3>8.3 MICIVI — el proyecto que <em>no</em> usa este plugin</h3>
+
+<p>Análisis de cobertura mediática sobre el Ministerio de Comunicaciones. No tiene audio: trabaja
+sobre corpus de notas y publicaciones, así que no usa el skill. Se menciona acá por dos razones
+prácticas: comparte actores y temas con el proyecto de fideicomiso —su archivo de notas sirvió de
+corpus de contraste— y aporta la regla que allá se confirmó, <strong>clasificar sobre título y
+entradilla, no sobre el cuerpo</strong>. Cuando un proyecto usa el corpus de otro, se dice
+explícitamente en el reporte y se aplican <em>las reglas del proyecto de origen</em>; las
+configuraciones no se fusionan.</p>
+
+<h2 id="gotchas">9. Gotchas ya pagados (tabla de referencia)</h2>
+
+<table>
+  <tr><th>Síntoma</th><th>Causa real</th><th>Qué hacer</th></tr>
+  <tr><td>Faltan tramos enteros de habla en un audio largo</td><td><code>detect_language=true</code> descarta pasajes</td><td>Fijar <code>language=es</code></td></tr>
+  <tr><td>Densidad baja de palabras/min + huecos largos</td><td>Volumen de grabación bajo</td><td><code>volumedetect</code> &rarr; <code>loudnorm</code> &rarr; re-transcribir</td></tr>
+  <tr><td>Transcripción vacía, confianza 0.0, audio que sí suena</td><td>Canales estéreo en contrafase</td><td>Comparar L / R / MID / SIDE; procesar un solo canal</td></tr>
+  <tr><td>Confianza 0.0 aun normalizado y en WAV</td><td>Eco, reverberación o solapamiento</td><td>Cruzar con Whisper en un fragmento; revisión humana pesada</td></tr>
+  <tr><td>Cifras absurdas (<code>600003000</code>)</td><td><code>smart_format</code> formatea números hablados</td><td>Segunda corrida sin formateo; alinear por tiempo</td></tr>
+  <tr><td>Respuestas cortas atribuidas al hablante equivocado</td><td><code>utterances</code> funde intervenciones</td><td>Construir turnos por palabra</td></tr>
+  <tr><td>Un solo hablante en un audio con varios</td><td>Diarización fallida</td><td>Segmentar a mano sobre las marcas por palabra</td></tr>
+  <tr><td>Una sigla clave «no aparece» en la transcripción</td><td>Variante fonética del ASR</td><td>Buscar variantes antes de concluir ausencia</td></tr>
+  <tr><td>Contenido inservible, todo redactado</td><td><code>redact=pii</code></td><td>No usarlo nunca; tokenizar a mano en la limpieza</td></tr>
+</table>
+
+<h2 id="no-hacer">10. Qué NO hacer</h2>
+<ul>
+  <li><strong>No alinear un texto ya «limpio» contra el JSON.</strong> Armar siempre los turnos
+    directo del JSON crudo: alinear rompe las marcas de tiempo y la atribución de hablante en los
+    turnos cortos.</li>
+  <li><strong>No usar <code>redact=pii</code> de Deepgram.</strong> Sobre-redacta ocupaciones,
+    fechas, edades y nombres de instituciones, y deja el contenido inservible.</li>
+  <li><strong>No forzar una corrección sin apoyo contextual</strong> solo para «limpiar» un
+    <code>[dudoso]</code>.</li>
+  <li><strong>No presentar una salida de Whisper como transcripción lista</strong> para limpieza
+    ligera.</li>
+  <li><strong>No escalar a un lote completo</strong> sin haber validado el criterio en al menos una
+    grabación.</li>
+  <li><strong>No heredar la lista de <code>pendientes</code></strong> de otra grabación ni de otro
+    proyecto.</li>
+</ul>
+
+<h2 id="problemas">11. Solución de problemas</h2>
+
+<h3><code>/plugin marketplace add</code> falla o no encuentra el repositorio</h3>
+<p>Nombre mal escrito, o el repositorio no tiene <code>.claude-plugin/marketplace.json</code> en la
+raíz. Probar con la URL completa del repositorio.</p>
+
+<h3><code>/plugin install</code> dice que no encuentra el plugin</h3>
+<p>El nombre después de <code>@</code> es el del <strong>marketplace</strong>, que puede diferir del
+nombre del plugin. Acá coinciden:
+<code>transcript-cleanup-toolkit@transcript-cleanup-toolkit</code>.</p>
+
+<h3>Instalé el plugin en la app Desktop y el skill no aparece en la pestaña Code</h3>
+<p>Casi seguro se instaló desde <strong>Customize &rarr; Plugins</strong>, que alimenta Chat y
+Cowork, no la pestaña Code. Reinstalarlo desde el botón <strong>+</strong> de la sesión de Code
+(§4.1).</p>
+
+<h3><code>ERROR: DEEPGRAM_API_KEY no está definido en el entorno</code></h3>
+<p>En la terminal: <code>export DEEPGRAM_API_KEY=...</code> o cargar el <code>.env</code>. En la app
+Desktop: el editor de entorno local o la clave <code>env</code> de
+<code>~/.claude/settings.json</code> (§4.2). Recordá que la app <strong>no</strong> lee los
+<code>export</code> de tu <code>.zshrc</code>.</p>
+
+<h3><code>Cannot find module 'docx'</code></h3>
+<p>El generador del documento necesita la librería <code>docx</code> de Node, y la copia del plugin
+en <code>~/.claude/plugins/cache/</code> no la trae. Dos salidas:</p>
+<pre><code># A) instalarla dentro del propio skill (una vez)
+cd ~/.claude/plugins/cache/transcript-cleanup-toolkit/transcript-cleanup-toolkit/&lt;versión&gt;/skills/transcript-cleanup
+npm install
+
+# B) apuntar NODE_PATH a un node_modules que ya la tenga
+NODE_PATH=/ruta/a/un/proyecto/node_modules node "$SK/scripts/build_transcript.js" &lt;dir&gt;</code></pre>
+<p>Si tenés además un <em>checkout</em> del repositorio para desarrollo, van a existir dos copias
+del skill —la del checkout y la del cache—. El contenido es el mismo; lo que cambia es dónde está
+<code>node_modules</code>. Conviene resolver ambas rutas al inicio de la sesión y dejarlo escrito en
+el <code>CLAUDE.md</code> del proyecto.</p>
+
+<h3>Git marca todos los archivos como modificados y el diff sale vacío</h3>
+<p>Pasa cuando el repositorio vive en un disco externo con formato exFAT: git ve un cambio de
+permisos (<code>100644 &rarr; 100755</code>) en todo el árbol. <code>git diff --stat</code> da 0
+inserciones y 0 borrados. Se silencia con <code>git config core.fileMode false</code>. No es trabajo
+sin guardar.</p>
+
+<h3>La página de revisión no abre: «el puerto 8765 está ocupado»</h3>
+<p>Quedó otro servidor corriendo (por ejemplo, una revisión anterior que no se cerró con «Terminé»).
+Usar <code>--port 8766</code>, o cerrar el proceso viejo.</p>
+
+<h3><code>ERROR: no se encontró ffmpeg</code> al cortar clips</h3>
+<p><code>make_clips.py</code> y la extracción de audio de videos necesitan <code>ffmpeg</code> y
+<code>ffprobe</code> en el <code>PATH</code> de la sesión. En la app Desktop, el <code>PATH</code> puede
+no ser el de tu terminal: agregar la carpeta de ffmpeg en el editor de entorno local (§4.2).</p>
+
+<h3>El clip no corresponde al tramo dudoso</h3>
+<p>La ubicación es una estimación: el texto limpio no se mapea palabra a palabra con el JSON.
+Corregir <code>start</code>/<code>end</code> de esa entrada en <code>dudosos.json</code> mirando las
+<code>words</code> del JSON de Deepgram, y volver a correr <code>make_clips.py</code>.</p>
+
+<h3>El <code>.docx</code> se ve raro al abrirlo en Word</h3>
+<p>Abrirlo en Word y exportarlo a PDF antes de darlo por terminado. Word sustituye fuentes y
+encadena listas numeradas de forma que no se ve en ningún otro visor.</p>
+
+<h2 id="referencia">12. Referencia rápida</h2>
+
+<h3>Comandos</h3>
+<pre><code># Instalación
+/plugin marketplace add ramonzamora89/transcript-cleanup-toolkit
+/plugin install transcript-cleanup-toolkit@transcript-cleanup-toolkit
+/plugin marketplace update transcript-cleanup-toolkit
+
+# Pipeline
+export DEEPGRAM_API_KEY=...
+scripts/transcribe.sh audio/ transcripciones/
+python3 scripts/diagnose_audio.py transcripciones/&lt;slug&gt;/&lt;slug&gt;_deepgram.json
+python3 scripts/build_turns.py       &lt;id&gt;_deepgram.json merged.json
+python3 scripts/build_turns_words.py &lt;id&gt;_deepgram.json merged_words_&lt;id&gt;.json
+#   ... limpieza fina -&gt; turns_ts.json + cfg.json ...
+python3 scripts/find_dudosos.py    transcripciones/&lt;slug&gt; &lt;id&gt;_deepgram.json
+python3 scripts/make_clips.py      transcripciones/&lt;slug&gt;
+python3 scripts/review_server.py   transcripciones/&lt;slug&gt;   # app Desktop
+python3 scripts/apply_resoluciones.py transcripciones/&lt;slug&gt;
+node scripts/build_transcript.js transcripciones/&lt;slug&gt;
+
+# Diagnóstico de audio
+ffmpeg -i audio.mp3 -af volumedetect -f null -
+ffmpeg -i audio.mp3 -af loudnorm=I=-16:TP=-1.5:LRA=11 -ar 16000 -ac 1 salida.mp3
+ffmpeg -i audio.mp3 -af "pan=mono|c0=c0,volumedetect" -f null -   # canal izquierdo</code></pre>
+
+<h3>Contenido del plugin</h3>
+<table>
+  <tr><th>Archivo</th><th>Qué hace</th></tr>
+  <tr><td><code>SKILL.md</code></td><td>El flujo completo y los principios de limpieza</td></tr>
+  <tr><td><code>scripts/transcribe.sh</code></td><td>Llama a Deepgram (nova-3, diarización, keyterms)</td></tr>
+  <tr><td><code>scripts/diagnose_audio.py</code></td><td>Palabras/minuto y huecos de silencio</td></tr>
+  <tr><td><code>scripts/build_turns.py</code></td><td>Turnos desde <code>utterances</code></td></tr>
+  <tr><td><code>scripts/build_turns_words.py</code></td><td>Turnos desde el hablante de cada palabra</td></tr>
+  <tr><td><code>scripts/find_dudosos.py</code></td><td>Ubica en el tiempo cada <code>[dudoso]</code>/<code>[inaudible]</code></td></tr>
+  <tr><td><code>scripts/make_clips.py</code></td><td>Corta un clip por tramo (mp3, o mp4 si la fuente es video)</td></tr>
+  <tr><td><code>scripts/review_server.py</code> + <code>assets/review.html</code></td><td>Página local para escuchar y elegir</td></tr>
+  <tr><td><code>scripts/apply_resoluciones.py</code></td><td>Aplica las elecciones a <code>turns_ts.json</code> y a los pendientes</td></tr>
+  <tr><td><code>scripts/build_transcript.js</code></td><td>Genera el <code>.docx</code> desde <code>cfg.json</code> + <code>turns_ts.json</code></td></tr>
+  <tr><td><code>references/criterios-limpieza-ejemplo.md</code></td><td>Plantilla de glosario y criterios por proyecto</td></tr>
+  <tr><td><code>assets/cfg.example.json</code></td><td>Plantilla de configuración por grabación</td></tr>
+</table>
+
+<p style="margin-top:16pt; color:#64748b; font-size:9pt">
+Plugin bajo licencia MIT · <a href="https://github.com/ramonzamora89/transcript-cleanup-toolkit">github.com/ramonzamora89/transcript-cleanup-toolkit</a><br>
+Este manual se regenera con <code>python3 docs/build_manual.py</code> desde <code>docs/manual.html</code>.
+</p>
+
+</body>
+</html>
